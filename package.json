@@ -4,8 +4,9 @@
   "description": "YouTube's Redesigned backend",
   "type": "module",
   "main": "index.js",
+  "//": "Start the server with nodemon and dotenv support enabled for environment variables (experimental-json-modules is used to import JSON files)",
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
   "keywords": [
     "Javascript",
@@ -16,5 +17,10 @@
   "devDependencies": {
     "nodemon": "^3.1.9",
     "prettier": "^3.5.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.1"
   }
 }
