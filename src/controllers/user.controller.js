@@ -13,7 +13,6 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const registerUser = asyncHandler(async (req, res) => {
   // Get the user data from the request body
   const { username, email, password, fullName } = req.body;
-  console.log(`Email: ${email}, Password: ${password}`);
 
   // Check if all required fields are provided
   if (
@@ -28,12 +27,20 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User already exists");
+    throw new ApiError(
+      409,
+      "User with the same email or username already exists"
+    );
   }
 
   // Check if the avatar and cover image are uploaded
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  const coverImageLocalPath =
+    req.files &&
+    Array.isArray(req.files?.coverImage) &&
+    req.files.coverImage.length > 0
+      ? req.files.coverImage[0].path
+      : undefined;
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
@@ -47,6 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to upload avatar to cloudinary");
   }
 
+  // TODO: Placeholder for avatar and cover image
   // Create a new user in the database
   const user = await User.create({
     username: username.toLowerCase(),
@@ -54,7 +62,7 @@ const registerUser = asyncHandler(async (req, res) => {
     fullName,
     password,
     avatar: avatar.url,
-    coverImage: coverImage.url || "",
+    coverImage: coverImage?.url || "",
   });
 
   // Remove password and refresh token from the response

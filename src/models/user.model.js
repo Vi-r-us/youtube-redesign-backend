@@ -24,16 +24,13 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     }, // Email of the user
-    fullName: { type: String, required: true, trim: true }, // Full name of the user
 
+    fullName: { type: String, required: true, trim: true }, // Full name of the user
     role: {
       type: String,
       enum: ["viewer", "creator", "admin"],
-      required: true,
-      unique: true,
     }, // Role of the user (viewer, creator, admin)
 
-    // TODO: Cloudinary URL
     avatar: { type: String }, // URL of the user's avatar
     coverImage: { type: String }, // URL of the user's cover image
 
