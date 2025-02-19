@@ -6,12 +6,12 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
+// This schema represents a video uploaded by a user.
 const videoSchema = new Schema(
   {
     title: { type: String, required: true, trim: true }, // Title of the video
     description: { type: String, required: true, trim: true }, // Description of the video
 
-    // TODO: Cloudinary URL for thumbnail and video file
     videoFile: { type: String, required: true }, // URL of the video file
     thumbnail: { type: String, required: true }, // URL of the thumbnail image
 
@@ -32,4 +32,5 @@ const videoSchema = new Schema(
 // Add pagination plugin to the video schema
 videoSchema.plugin(mongooseAggregatePaginate);
 
+// Create and export the Video model
 export const Video = mongoose.model("Video", videoSchema);

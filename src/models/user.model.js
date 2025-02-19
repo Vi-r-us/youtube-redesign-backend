@@ -7,6 +7,7 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+// This schema represents a user in the application.
 const userSchema = new Schema(
   {
     username: {
@@ -37,7 +38,7 @@ const userSchema = new Schema(
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Video",
+        ref: "WatchHistory",
       },
     ], // Array of video references for the user's watch history
 
