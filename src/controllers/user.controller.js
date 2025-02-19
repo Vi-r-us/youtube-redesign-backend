@@ -253,4 +253,158 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+/**
+ * Changes the current password of the logged-in user.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with a success message.
+ */
+const currentPasswordChange = asyncHandler(async (req, res) => {
+  // Get the old and new passwords from the request body
+  const { oldPassword, newPassword } = req.body;
+
+  // Find the user by ID from the request user
+  const user = await User.findById(req.user?._id);
+
+  // Verify the old password using the user's verifyPassword method
+  const isPasswordCorrect = await user.verifyPassword(oldPassword);
+
+  // If old password is not correct, throw an error
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  // If old password is correct, update the password with the new password
+  user.password = newPassword;
+  // Save the updated user to the database
+  await user.save({ validateBeforeSave: false });
+
+  // Return response with success message
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+/**
+ * Gets the current user's information.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with the current user's information.
+ */
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res.status
+    .status(200)
+    .json(new ApiResponse(200, req.user, "Current user fetched successfully"));
+});
+
+/**
+ * Updates the account details of the logged-in user.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with the updated user information.
+ */
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  // Get the full name and email from the request body
+  const { fullName, email } = req.body;
+
+  // If full name or email is missing, throw an error
+  if (!fullName || !email) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  // Find the user by ID and update the full name and email fields and remove the password and refresh token fields from the response
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    { $set: { fullName, email } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  // Return response with success message and updated user information
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details updated successfully"));
+});
+
+/**
+ * Updates the avatar of the logged-in user.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with the updated user information.
+ */
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  // Get the avatar from the request file
+  const avatarLocalPath = req.file?.path;
+
+  // If avatar is not found, throw an error
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar is required");
+  }
+
+  // Upload the avatar to Cloudinary and get the URL
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  // If avatar URL is not found, throw an error
+  if (!avatar?.url) {
+    throw new ApiError(400, "Something went wrong while uploading the avatar");
+  }
+
+  // Find the user by ID and update the avatar field and remove the password and refresh token fields from the response
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    { $set: { avatar: avatar.url } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  // Return response with success message and updated user information
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar updated successfully"));
+});
+
+/**
+ * Updates the cover image of the logged-in user.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with the updated user information.
+ */
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+  // Get the cover image from the request file
+  const coverImageLocalPath = req.file?.path;
+
+  // If cover image is not found, throw an error
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, "Cover image is required");
+  }
+
+  // Upload the cover image to Cloudinary and get the URL
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+  // If cover image URL is not found, throw an error
+  if (!coverImage?.url) {
+    throw new ApiError(400, "Something went wrong while uploading the cover image");
+  }
+
+  // Find the user by ID and update the cover image field and remove the password and refresh token fields from the response
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    { $set: { coverImage: coverImage.url } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  // Return response with success message and updated user information
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Cover image updated successfully"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  currentPasswordChange,
+  getCurrentUser,
+  updateAccountDetails,
+  updateUserAvatar,
+  updateUserCoverImage,
+};
