@@ -61,12 +61,12 @@ userSchema.methods.verifyPassword = async function (password) {
 
 // Instance method to generate an access token
 userSchema.methods.generateAccessToken = async function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
       email: this.email,
       username: this.username,
-      fullName: this.fullName,
+      fullName: this.fullName,  
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -77,7 +77,7 @@ userSchema.methods.generateAccessToken = async function () {
 
 // Instance method to generate a refresh token
 userSchema.methods.generateRefreshToken = async function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
     },
