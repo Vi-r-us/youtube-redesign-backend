@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
 
 /**
  * Generates access and refresh tokens for a user.
@@ -13,11 +14,11 @@ const generateAccessAndRefreshToken = async (userId) => {
   try {
     // Find the user by ID
     const user = await User.findById(userId);
-    
+
     // Generate access and refresh tokens
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
-    
+
     // Save the refresh token in the database
     user.refreshToken = refreshToken;
     // Save the user in the database without validating the password field
@@ -186,4 +187,70 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-export { registerUser, loginUser, logoutUser };
+/**
+ * Refreshes the access token using the provided refresh token.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with the new access and refresh tokens.
+ */
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  // Get the refresh token from the request
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
+
+  // If refresh token is not found then throw an error
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  try {
+    // Verify the refresh token using the secret key
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    // If token is not verified then throw an error
+    if (!decodedToken) {
+      throw new ApiError(401, "Error while verifying refresh token");
+    }
+
+    // Find the user by ID from the decoded token
+    const user = await User.findById(decodedToken?._id);
+
+    // If user is not found, throw an error
+    if (!user) {
+      throw new ApiError(401, "User not found");
+    }
+
+    // If refresh token does not match then throw an error
+    if (incomingRefreshToken !== user.refreshToken) {
+      throw new ApiError(401, "Refresh token is expired or used");
+    }
+
+    // Set the options for the cookies
+    const options = { httpOnly: true, secure: true };
+
+    // Generate new access and refresh tokens
+    const { accessToken, refreshToken: newRefreshToken } =
+      await generateAccessAndRefreshToken(user._id);
+
+    // Return response with new access and refresh tokens
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken, refreshToken: newRefreshToken },
+          "Access token refreshed successfully"
+        )
+      );
+  } catch (error) {
+    // If an error occurs, throw an unauthorized error with the error message
+    throw new ApiError(401, error?.message || "Invalid refresh token");
+  }
+});
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken };
