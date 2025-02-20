@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 /**
@@ -263,6 +263,16 @@ const currentPasswordChange = asyncHandler(async (req, res) => {
   // Get the old and new passwords from the request body
   const { oldPassword, newPassword } = req.body;
 
+  // If old password or new password is not found, throw an error
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "Old password and new password are required");
+  }
+
+  // If old password and new password are the same, throw an error
+  if (oldPassword === newPassword) {
+    throw new ApiError(400, "Old password and new password are the same");
+  }
+
   // Find the user by ID from the request user
   const user = await User.findById(req.user?._id);
 
@@ -292,7 +302,7 @@ const currentPasswordChange = asyncHandler(async (req, res) => {
  * @returns {Object} The response object with the current user's information.
  */
 const getCurrentUser = asyncHandler(async (req, res) => {
-  return res.status
+  return res
     .status(200)
     .json(new ApiResponse(200, req.user, "Current user fetched successfully"));
 });
@@ -355,6 +365,11 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     { new: true }
   ).select("-password -refreshToken");
 
+  // Remove the old avatar from Cloudinary
+  if (user?.avatar) {
+    await deleteImageFromCloudinary(user.avatar);
+  }
+
   // Return response with success message and updated user information
   return res
     .status(200)
@@ -381,7 +396,10 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
   // If cover image URL is not found, throw an error
   if (!coverImage?.url) {
-    throw new ApiError(400, "Something went wrong while uploading the cover image");
+    throw new ApiError(
+      400,
+      "Something went wrong while uploading the cover image"
+    );
   }
 
   // Find the user by ID and update the cover image field and remove the password and refresh token fields from the response
@@ -390,6 +408,11 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     { $set: { coverImage: coverImage.url } },
     { new: true }
   ).select("-password -refreshToken");
+
+  // Remove the old cover image from Cloudinary
+  if (user?.coverImage) {
+    await deleteImageFromCloudinary(user.coverImage);
+  }
 
   // Return response with success message and updated user information
   return res
