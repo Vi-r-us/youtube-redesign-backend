@@ -2,7 +2,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
+import {
+  uploadOnCloudinary,
+  deleteImageFromCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 /**
@@ -342,8 +345,9 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
  * @returns {Object} The response object with the updated user information.
  */
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  // Get the avatar from the request file
+  // Get the avatar local path and old avatar URL from the request file
   const avatarLocalPath = req.file?.path;
+  const oldAvatar = req.user?.avatar;
 
   // If avatar is not found, throw an error
   if (!avatarLocalPath) {
@@ -366,8 +370,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   ).select("-password -refreshToken");
 
   // Remove the old avatar from Cloudinary
-  if (user?.avatar) {
-    await deleteImageFromCloudinary(user.avatar);
+  if (oldAvatar) {
+    await deleteImageFromCloudinary(oldAvatar);
   }
 
   // Return response with success message and updated user information
@@ -383,8 +387,9 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
  * @returns {Object} The response object with the updated user information.
  */
 const updateUserCoverImage = asyncHandler(async (req, res) => {
-  // Get the cover image from the request file
+  // Get the cover image path and old cover image from the request file
   const coverImageLocalPath = req.file?.path;
+  const oldCoverImage = req.user?.coverImage;
 
   // If cover image is not found, throw an error
   if (!coverImageLocalPath) {
@@ -410,8 +415,8 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   ).select("-password -refreshToken");
 
   // Remove the old cover image from Cloudinary
-  if (user?.coverImage) {
-    await deleteImageFromCloudinary(user.coverImage);
+  if (oldCoverImage) {
+    await deleteImageFromCloudinary(oldCoverImage);
   }
 
   // Return response with success message and updated user information
