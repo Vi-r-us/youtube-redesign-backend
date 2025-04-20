@@ -35,13 +35,6 @@ const userSchema = new Schema(
     avatar: { type: String }, // URL of the user's avatar
     coverImage: { type: String }, // URL of the user's cover image
 
-    watchHistory: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "WatchHistory",
-      },
-    ], // Array of video references for the user's watch history
-
     password: { type: String, required: [true, "Password is required"] }, // Password of the user
     refreshToken: { type: String }, // Refresh token for the user
   },

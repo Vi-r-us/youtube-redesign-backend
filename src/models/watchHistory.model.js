@@ -15,11 +15,13 @@ const watchHistorySchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     }, // ObjectId of the user who watched the video
-    watchedAt: { type: Date, default: Date.now }, // Date when the video was watched
     progress: { type: Number, default: 0 }, // Progress of the video watched
   },
-  { timestamps: true }
-); // Automatically adds createdAt and updatedAt timestamps
+  { timestamps: true } // Automatically adds createdAt and updatedAt timestamps
+); 
+
+// Create a unique index on the combination of video and owner fields
+watchHistorySchema.index({ video: 1, owner: 1 }, { unique: true });
 
 // Create and export the WatchHistory model
 export const WatchHistory = mongoose.model("WatchHistory", watchHistorySchema);

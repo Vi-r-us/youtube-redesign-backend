@@ -7,6 +7,7 @@ import {
   deleteImageFromCloudinary,
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 /**
  * Generates access and refresh tokens for a user.
@@ -506,6 +507,43 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     );
 });
 
+// TODO: Test that the getUserWatchHistory function works as expected (Postman)
+/**
+ * Gets the watch history of a user.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Object} The response object with the watch history information.
+ */
+const getUserWatchHistory = asyncHandler(async (req, res) => {
+  const user = await User.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(req.user?._id) } },
+    {
+      $lookup: {
+        from: "watchhistories",
+        localField: "_id",
+        foreignField: "user",
+        as: "watchHistory",
+      },
+    },
+    {
+      $lookup: {
+        from: "watchhistories",
+        localField: "_id",
+        foreignField: "owner",
+        as: "owner",
+      },
+    },
+  ]);
+
+  if (!user?.length) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user[0].watchHistory, "Watch history fetched successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -517,4 +555,5 @@ export {
   updateUserAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
+  getUserWatchHistory,
 };

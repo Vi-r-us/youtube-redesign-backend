@@ -48,7 +48,7 @@ router.route("/change-password").post(verifyJWT, currentPasswordChange);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 
 // Route for updating account details
-router.route("/update-account-details").post(verifyJWT, updateAccountDetails);
+router.route("/update-account-details").patch(verifyJWT, updateAccountDetails);
 // Route for updating user avatar
 router.route("/update-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
 // Route for updating user cover image
@@ -56,6 +56,5 @@ router.route("/update-cover-image").patch(verifyJWT, upload.single("coverImage")
 
 // Route for getting user channel profile
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
-
 
 export default router;
