@@ -15,12 +15,18 @@ const videoSchema = new Schema(
     videoFile: { type: String, required: true }, // URL of the video file
     thumbnail: { type: String, required: true }, // URL of the thumbnail image
 
-    tags: { type: [String], required: true }, // Tags associated with the video
+    tags: { type: [String], default: [] }, // Tags associated with the video
+    category: { type: String, default: "" }, // Category of the video
     views: { type: Number, default: 0 }, // Number of views
     duration: { type: Number }, // Duration of the video in seconds
-    isPublished: { type: Boolean, default: false }, // Publication status of the video
 
     owner: { type: Schema.Types.ObjectId, ref: "User" }, // Reference to the user who owns the video
+
+    status: {
+      type: String,
+      enum: ["public", "private", "unlisted"],
+      default: "public",
+    }, // Status of the video (public, private, unlisted)
 
     likesDislikes: [
       {

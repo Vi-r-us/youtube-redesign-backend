@@ -76,8 +76,8 @@ const registerUser = asyncHandler(async (req, res) => {
       : undefined;
 
   // Upload the avatar and cover image to cloudinary
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath, "avatars");
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath, "coverImages");
 
   // Create a new user in the database
   const user = await User.create({
@@ -356,7 +356,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   // Upload the avatar to Cloudinary and get the URL
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath, "avatars");
 
   // If avatar URL is not found, throw an error
   if (!avatar?.url) {
@@ -398,7 +398,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   }
 
   // Upload the cover image to Cloudinary and get the URL
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath, "coverImages");
 
   // If cover image URL is not found, throw an error
   if (!coverImage?.url) {

@@ -13,7 +13,7 @@ cloudinary.config({
  * @param {string} localFilePath - The path to the local file to be uploaded.
  * @returns {Object|null} The upload result from Cloudinary or null if the upload fails.
  */
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath, folderName) => {
   try {
     // Return null if the local file path is not provided
     if (!localFilePath) return null;
@@ -21,6 +21,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     // Upload the local image file to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
+      folder: folderName,
     });
     console.log("Upload successful: ", uploadResult.url);
 
